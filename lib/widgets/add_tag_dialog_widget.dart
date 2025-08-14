@@ -1,39 +1,48 @@
+import 'package:expense_manager/models/tag_model.dart';
+import 'package:expense_manager/provider/expense_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class AddTagDialog extends StatefulWidget {
-  const AddTagDialog({super.key});
+  final Function(Tag) onAdd;
+
+  const AddTagDialog({super.key, required this.onAdd});
 
   @override
-  AddTagDialogState createState() => AddTagDialogState();
+  _AddTagDialogState createState() => _AddTagDialogState();
 }
 
-class AddTagDialogState extends State<AddTagDialog> {
-  final TextEditingController _nameController = TextEditingController();
+class _AddTagDialogState extends State<AddTagDialog> {
+  final TextEditingController _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Add Tag'),
+      title: const Text('Add New Tag'),
       content: TextField(
-        controller: _nameController,
-        decoration: const InputDecoration(labelText: 'Tag Name'),
+        controller: _controller,
+        decoration: const InputDecoration(
+          labelText: 'Tag Name',
+        ),
       ),
-      actions: <Widget>[
+      actions: [
         TextButton(
+          child: const Text('Cancel'),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        TextButton(
+          child: const Text('Add'),
           onPressed: () {
+            var newTag =
+                Tag(id: DateTime.now().toString(), name: _controller.text);
+            widget.onAdd(newTag);
+            // Update the provider and UI
+            Provider.of<ExpenseProvider>(context, listen: false).addTag(newTag);
+            // Clear the input field for next input
+            _controller.clear();
+
             Navigator.of(context).pop();
           },
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            final tagName = _nameController.text;
-            if (tagName.isNotEmpty) {
-              // Add tag logic here
-              Navigator.of(context).pop(tagName);
-            }
-          },
-          child: const Text('Add'),
         ),
       ],
     );
@@ -41,7 +50,7 @@ class AddTagDialogState extends State<AddTagDialog> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 }
